@@ -1,6 +1,6 @@
 # Sistema de Gestão de Fretes – Flask
 
-![[New Project.gif]]
+![alt text](<New Project.gif>)
 
 Sistema web desenvolvido em **Flask + SQLite** com o objetivo de **auxiliar e minimizar o tempo de trabalho operacional**, facilitando a **troca e organização de documentos de frete entre duas pessoas**.
 
