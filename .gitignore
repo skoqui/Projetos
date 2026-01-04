@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+env/
+.venv/
+
+# Banco de dados
+banco.db
+
+# Uploads
+uploads/
+
+# Sistema
+.DS_Store
+Thumbs.db
