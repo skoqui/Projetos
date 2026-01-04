@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card p-4">
+    <div class="d-flex justify-content-between">
+        <h3>📨 Novo Serviço</h3>
+        <a href="/listar" class="btn btn-outline-primary">
+            📂 Ver Serviços
+        </a>
+    </div>
+
+    <hr>
+
+    <form method="POST" enctype="multipart/form-data">
+
+        <!-- EMPRESA -->
+        <div class="mb-3">
+            <label class="form-label">Empresa</label><br>
+            <input type="radio" name="empresa" value="Ágape" required> Ágape
+            <input type="radio" name="empresa" value="Rodomar"> Rodomar
+            <input type="radio" name="empresa" value="Cape"> Cape
+        </div>
+
+        <!-- NOME DO SERVIÇO -->
+        <div class="mb-3">
+            <label class="form-label">Nome do Serviço</label>
+            <input class="form-control" name="servico" required>
+        </div>
+
+
+        <!-- PAGADOR -->
+        <div class="mb-3">
+            <label class="form-label">Quem vai pagar?</label>
+            <select class="form-select" name="pagador" required>
+                <option value="Remetente">Remetente</option>
+                <option value="Destinatário">Destinatário</option>
+            </select>
+        </div>
+
+        <!-- VALOR -->
+        <div class="mb-3">
+            <label class="form-label">Valor do Frete (R$)</label>
+            <input class="form-control" name="valor">
+        </div>
+
+        <!-- Agrupar CTE -->
+        <div class="mb-3">
+            <label class="form-label">Agrupar CTE?</label><br>
+
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="agrupar_cte" value="1">
+                <label class="form-check-label">Sim</label>
+            </div>
+
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="agrupar_cte" value="0" checked>
+                <label class="form-check-label">Não</label>
+
+
+            </div>
+        </div>
+
+
+        <div class="mb-3">
+            <label class="form-label">Manifestar?</label><br>
+
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="manifestar" value="1">
+                <label class="form-check-label">Sim</label>
+            </div>
+
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="manifestar" value="0" checked>
+                <label class="form-check-label">Não</label>
+            </div>
+        </div>
+
+
+
+        <!-- DOCUMENTOS -->
+        <div class="mb-3">
+            <label class="form-label">Documentos</label>
+            <input class="form-control" type="file" name="documentos" multiple>
+        </div>
+
+        <button class="btn btn-success btn-lg">
+            <i class="bi bi-send"></i> Enviar Serviço
+        </button>
+
+    </form>
+</div>
+
+{% endblock %}
