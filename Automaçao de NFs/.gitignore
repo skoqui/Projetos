@@ -1,0 +1,18 @@
+# PyInstaller
+build/
+dist/
+*.exe
+
+# Python temporários
+__pycache__/
+*.pyc
+
+# Ambiente Virtual
+.venv/
+venv/
+env/
+.env
+
+# Configurações de IDE (opcional)
+.vscode/
+.idea/
