@@ -5,7 +5,7 @@ from PIL import Image
 import tkinter as tk
 from tkinter import filedialog
 import os
-import platform  # Importante para detectar o sistema
+import platform
 
 
 def configurar_caminhos():
