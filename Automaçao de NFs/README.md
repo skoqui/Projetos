@@ -11,6 +11,9 @@ Este projeto foi desenvolvido para automatizar e agilizar o processo de extraç�
 - **Formatação Automática:** Entrega a chave pronta: `35XX XXXX XXXX XXXX XXXX XXXX XXXX XXXX XXXX XXXX XXXX`.
 
 ---
+![alt text](scr1.png)
+![alt text](scr2.png)
+---
 
 ## 📋 Pré-requisitos (Dependências do Sistema)
 
