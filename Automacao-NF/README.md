@@ -38,8 +38,8 @@ sudo apt install tesseract-ocr tesseract-ocr-por poppler-utils
 
 1. **Clone o repositório:**
 ```bash
-git clone https://github.com/seu-usuario/seu-projeto.git
-cd seu-projeto
+git clone https://github.com/skoqui/Projetos.git
+cd Projetos/Automacao-NF/
 ```
 
 2. **Crie e ative um ambiente virtual:**
