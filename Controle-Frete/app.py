@@ -10,7 +10,7 @@ from flask import (
 import sqlite3, os, uuid, datetime, shutil
 
 app = Flask(__name__)
-app.secret_key = "fretes-seguro"  # necessário para flash
+app.secret_key = "fretes-seguro"
 
 DB = "banco.db"
 UPLOAD = "uploads/fretes"
@@ -24,10 +24,6 @@ def conectar():
 
 
 def limpar_valor_brl(valor_raw):
-    """
-    Recebe valor no formato BR (1.234,56)
-    Retorna float seguro (1234.56)
-    """
     if not valor_raw:
         raise ValueError("Valor vazio")
 
@@ -48,7 +44,7 @@ def enviar():
         enviado_por = "Carla"
         data_hora = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
 
-        # 🔐 VALIDAÇÃO DO VALOR DO FRETE
+        # VALIDAÇÃO DO VALOR DO FRETE
         try:
             valor_frete = limpar_valor_brl(request.form.get("valor"))
         except ValueError:
@@ -87,7 +83,7 @@ def enviar():
                 servico,
                 enviado_por,
                 pagador,
-                valor_frete,  # 👈 agora é FLOAT seguro
+                valor_frete,
                 0,
                 0,
                 data_hora,
