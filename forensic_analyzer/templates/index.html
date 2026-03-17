@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forensic Log Analyzer · UNIP SI</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050a0e;
+    --bg2: #0a1520;
+    --bg3: #0d1e2e;
+    --panel: #091525;
+    --border: #0f3a5a;
+    --green: #00ff88;
+    --green2: #00cc66;
+    --cyan: #00cfff;
+    --red: #ff3355;
+    --orange: #ff8c00;
+    --yellow: #ffd600;
+    --text: #c8e8ff;
+    --muted: #4a7a9b;
+    --font-mono: 'Share Tech Mono', monospace;
+    --font-ui: 'Rajdhani', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-ui);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* GRID BACKGROUND */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,207,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,207,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* SCANLINE */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.08) 2px,
+      rgba(0,0,0,0.08) 4px
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { max-width: 1300px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 1; }
+
+  /* HEADER */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 18px 0;
+    background: linear-gradient(180deg, rgba(0,207,255,0.04) 0%, transparent 100%);
+    position: relative;
+  }
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .logo-icon {
+    width: 44px; height: 44px;
+    border: 2px solid var(--cyan);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    box-shadow: 0 0 16px rgba(0,207,255,0.3), inset 0 0 16px rgba(0,207,255,0.05);
+    animation: pulse-border 3s ease-in-out infinite;
+  }
+  @keyframes pulse-border {
+    0%,100% { box-shadow: 0 0 16px rgba(0,207,255,0.3), inset 0 0 16px rgba(0,207,255,0.05); }
+    50% { box-shadow: 0 0 30px rgba(0,207,255,0.6), inset 0 0 20px rgba(0,207,255,0.1); }
+  }
+  .logo-text h1 { font-size: 1.4rem; font-weight: 700; color: var(--cyan); letter-spacing: 2px; text-transform: uppercase; }
+  .logo-text p { font-family: var(--font-mono); font-size: 0.65rem; color: var(--muted); letter-spacing: 1px; }
+  .header-badge {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--green);
+    border: 1px solid var(--green2);
+    padding: 4px 10px;
+    letter-spacing: 1px;
+    animation: blink-status 2s step-end infinite;
+  }
+  @keyframes blink-status {
+    0%,100% { opacity: 1; } 50% { opacity: 0.4; }
+  }
+
+  /* MAIN LAYOUT */
+  main { padding: 30px 0 60px; }
+
+  /* UPLOAD PANEL */
+  .upload-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: 28px;
+    margin-bottom: 30px;
+    position: relative;
+  }
+  .upload-panel::before {
+    content: 'INPUT';
+    position: absolute;
+    top: -10px; left: 20px;
+    background: var(--bg);
+    padding: 0 8px;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--cyan);
+    letter-spacing: 2px;
+  }
+  .upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media(max-width:700px) { .upload-grid { grid-template-columns: 1fr; } }
+
+  .drop-zone {
+    border: 2px dashed var(--border);
+    padding: 32px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  }
+  .drop-zone:hover, .drop-zone.dragover {
+    border-color: var(--cyan);
+    background: rgba(0,207,255,0.04);
+  }
+  .drop-zone .icon { font-size: 2.2rem; }
+  .drop-zone p { font-size: 0.85rem; color: var(--muted); }
+  .drop-zone strong { color: var(--cyan); font-size: 0.95rem; }
+
+  #fileInput { display: none; }
+
+  textarea {
+    width: 100%;
+    height: 160px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    padding: 12px;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  textarea:focus { border-color: var(--cyan); }
+  textarea::placeholder { color: var(--muted); }
+
+  .btn-row { display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
+
+  .btn {
+    font-family: var(--font-ui);
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 10px 24px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-primary {
+    background: var(--cyan);
+    color: var(--bg);
+  }
+  .btn-primary:hover { background: #00a8d4; box-shadow: 0 0 20px rgba(0,207,255,0.4); }
+  .btn-demo {
+    background: transparent;
+    color: var(--green);
+    border: 1px solid var(--green2);
+  }
+  .btn-demo:hover { background: rgba(0,255,136,0.07); box-shadow: 0 0 16px rgba(0,255,136,0.2); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* LOADING */
+  #loading {
+    display: none;
+    text-align: center;
+    padding: 40px;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--cyan);
+  }
+  .spinner {
+    width: 40px; height: 40px;
+    border: 2px solid var(--border);
+    border-top-color: var(--cyan);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* RESULTS */
+  #results { display: none; }
+
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    color: var(--cyan);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* STAT CARDS */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+  .stat-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: 18px 16px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s;
+  }
+  .stat-card:hover { transform: translateY(-2px); }
+  .stat-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .stat-card.stat-neutral::after { background: var(--cyan); }
+  .stat-card.stat-critical::after { background: var(--red); }
+  .stat-card.stat-high::after { background: var(--orange); }
+  .stat-card.stat-warn::after { background: var(--yellow); }
+  .stat-card.stat-ok::after { background: var(--green); }
+
+  .stat-value {
+    font-family: var(--font-mono);
+    font-size: 2rem;
+    font-weight: 400;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .stat-neutral .stat-value { color: var(--cyan); }
+  .stat-critical .stat-value { color: var(--red); text-shadow: 0 0 12px rgba(255,51,85,0.5); }
+  .stat-high .stat-value { color: var(--orange); }
+  .stat-warn .stat-value { color: var(--yellow); }
+  .stat-ok .stat-value { color: var(--green); }
+
+  .stat-label {
+    font-size: 0.72rem;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* ALERTS */
+  .alert-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 28px; }
+  .alert-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px 14px;
+    border-left: 3px solid;
+    background: var(--panel);
+    font-size: 0.85rem;
+    animation: slide-in 0.3s ease both;
+  }
+  @keyframes slide-in {
+    from { transform: translateX(-10px); opacity: 0; }
+    to { transform: none; opacity: 1; }
+  }
+  .alert-item.sev-CRÍTICO { border-color: var(--red); background: rgba(255,51,85,0.06); }
+  .alert-item.sev-ALTO { border-color: var(--orange); background: rgba(255,140,0,0.06); }
+  .alert-item.sev-MÉDIO { border-color: var(--yellow); background: rgba(255,214,0,0.06); }
+  .alert-item.sev-INFO { border-color: var(--cyan); background: rgba(0,207,255,0.04); }
+
+  .alert-badge {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    font-weight: bold;
+    padding: 2px 7px;
+    white-space: nowrap;
+    align-self: flex-start;
+    margin-top: 1px;
+  }
+  .sev-CRÍTICO .alert-badge { background: var(--red); color: #fff; }
+  .sev-ALTO .alert-badge { background: var(--orange); color: #000; }
+  .sev-MÉDIO .alert-badge { background: var(--yellow); color: #000; }
+  .sev-INFO .alert-badge { background: var(--cyan); color: #000; }
+
+  .alert-body { flex: 1; }
+  .alert-msg { font-weight: 600; margin-bottom: 4px; }
+  .alert-raw {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    color: var(--muted);
+    word-break: break-all;
+  }
+
+  /* PANELS ROW */
+  .panels-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 28px;
+  }
+  @media(max-width:800px) { .panels-row { grid-template-columns: 1fr; } }
+
+  .data-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: 20px;
+    position: relative;
+  }
+  .data-panel::before {
+    content: attr(data-label);
+    position: absolute;
+    top: -10px; left: 16px;
+    background: var(--bg);
+    padding: 0 8px;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    color: var(--cyan);
+    letter-spacing: 2px;
+  }
+
+  .ip-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(15,58,90,0.5);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+  }
+  .ip-row:last-child { border: none; }
+  .ip-addr { color: var(--cyan); }
+  .ip-count { color: var(--green); }
+  .ip-bar {
+    height: 3px;
+    background: linear-gradient(90deg, var(--cyan), transparent);
+    margin-top: 3px;
+    border-radius: 2px;
+  }
+
+  .status-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 5px 0;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+  }
+  .status-code {
+    width: 42px; text-align: center; padding: 2px 6px; font-weight: bold; font-size: 0.72rem;
+  }
+  .s2xx { background: rgba(0,255,136,0.15); color: var(--green); }
+  .s3xx { background: rgba(0,207,255,0.15); color: var(--cyan); }
+  .s4xx { background: rgba(255,140,0,0.15); color: var(--orange); }
+  .s5xx { background: rgba(255,51,85,0.15); color: var(--red); }
+  .status-count { color: var(--muted); margin-left: auto; }
+
+  /* EVENTS TABLE */
+  .events-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: 20px;
+    position: relative;
+    margin-bottom: 28px;
+  }
+  .events-panel::before {
+    content: 'EVENTOS DETECTADOS';
+    position: absolute;
+    top: -10px; left: 16px;
+    background: var(--bg);
+    padding: 0 8px;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    color: var(--cyan);
+    letter-spacing: 2px;
+  }
+
+  .events-table-wrap { overflow-x: auto; }
+  table {
+    width: 100%; border-collapse: collapse;
+    font-family: var(--font-mono); font-size: 0.75rem;
+  }
+  th {
+    text-align: left;
+    padding: 8px 12px;
+    color: var(--muted);
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+    border-bottom: 1px solid var(--border);
+    text-transform: uppercase;
+  }
+  td { padding: 6px 12px; border-bottom: 1px solid rgba(15,58,90,0.3); vertical-align: middle; }
+  tr:hover td { background: rgba(0,207,255,0.03); }
+
+  .sev-badge {
+    display: inline-block;
+    font-size: 0.6rem;
+    padding: 2px 6px;
+    letter-spacing: 1px;
+    font-weight: bold;
+  }
+  .sev-critical { background: rgba(255,51,85,0.2); color: var(--red); border: 1px solid var(--red); }
+  .sev-high { background: rgba(255,140,0,0.2); color: var(--orange); border: 1px solid var(--orange); }
+  .sev-warning { background: rgba(255,214,0,0.2); color: var(--yellow); border: 1px solid var(--yellow); }
+  .sev-info { background: rgba(0,207,255,0.1); color: var(--cyan); border: 1px solid var(--border); }
+
+  .type-tag { color: var(--green2); }
+  .ip-tag { color: var(--cyan); }
+  .line-num { color: var(--muted); }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    padding: 20px 0;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+    letter-spacing: 1px;
+  }
+
+  /* GENERATED INFO */
+  .gen-info {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--muted);
+    text-align: right;
+    margin-bottom: 16px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container header-inner">
+    <div class="logo">
+      <div class="logo-icon">🔍</div>
+      <div class="logo-text">
+        <h1>Forensic Log Analyzer</h1>
+        <p>UNIP · SEGURANÇA DA INFORMAÇÃO · HORAS COMPLEMENTARES</p>
+      </div>
+    </div>
+    <div class="header-badge">● SISTEMA ATIVO</div>
+  </div>
+</header>
+
+<main>
+  <div class="container">
+
+    <div class="upload-panel">
+      <div class="upload-grid">
+        <div>
+          <div class="section-label">Upload de Arquivo</div>
+          <div class="drop-zone" id="dropZone">
+            <div class="icon">📂</div>
+            <strong>Arraste um arquivo aqui</strong>
+            <p>ou clique para selecionar</p>
+            <p style="font-size:0.7rem; margin-top:4px;">Formatos: .log · .txt · .csv</p>
+          </div>
+          <input type="file" id="fileInput" accept=".log,.txt,.csv">
+        </div>
+        <div>
+          <div class="section-label">Colar Log Diretamente</div>
+          <textarea id="logText" placeholder="Cole aqui o conteúdo do log (Apache, SSH, auth.log, syslog, etc.)..."></textarea>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" id="btnAnalyze" onclick="analyze()">⚡ Analisar Log</button>
+        <button class="btn btn-demo" onclick="loadDemo()">▶ Carregar Demo</button>
+      </div>
+    </div>
+
+    <div id="loading">
+      <div class="spinner"></div>
+      PROCESSANDO ANÁLISE FORENSE...
+    </div>
+
+    <div id="results">
+
+      <div class="gen-info" id="genInfo"></div>
+
+      <div class="section-label">Resumo Forense</div>
+      <div class="stat-grid" id="statGrid"></div>
+
+      <div class="section-label">Alertas de Segurança</div>
+      <div class="alert-list" id="alertList"></div>
+
+      <div class="panels-row">
+        <div class="data-panel" data-label="TOP IPs">
+          <div id="ipList"></div>
+        </div>
+        <div class="data-panel" data-label="CÓDIGOS HTTP">
+          <div id="statusList"></div>
+        </div>
+      </div>
+
+      <div class="events-panel">
+        <div class="events-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Linha</th>
+                <th>Severidade</th>
+                <th>Tipo</th>
+                <th>IP</th>
+                <th>Detalhes</th>
+              </tr>
+            </thead>
+            <tbody id="eventsBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</main>
+
+<footer>
+  <div class="container">
+    FORENSIC LOG ANALYZER · UNIP · SEGURANÇA DA INFORMAÇÃO · HORAS COMPLEMENTARES 2025
+  </div>
+</footer>
+
+<script>
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+let selectedFile = null;
+
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  const f = e.dataTransfer.files[0];
+  if (f) setFile(f);
+});
+fileInput.addEventListener('change', () => { if (fileInput.files[0]) setFile(fileInput.files[0]); });
+
+function setFile(f) {
+  selectedFile = f;
+  dropZone.innerHTML = `<div class="icon">✅</div><strong>${f.name}</strong><p>${(f.size/1024).toFixed(1)} KB</p>`;
+}
+
+async function analyze() {
+  const btn = document.getElementById('btnAnalyze');
+  const text = document.getElementById('logText').value.trim();
+
+  if (!selectedFile && !text) {
+    alert('Forneça um arquivo ou cole o conteúdo do log.');
+    return;
+  }
+
+  btn.disabled = true;
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('results').style.display = 'none';
+
+  try {
+    const formData = new FormData();
+    if (selectedFile) formData.append('file', selectedFile);
+    else formData.append('log_text', text);
+
+    const res = await fetch('/analyze', { method: 'POST', body: formData });
+    const data = await res.json();
+
+    if (data.error) { alert('Erro: ' + data.error); return; }
+    renderResults(data);
+  } catch(e) {
+    alert('Falha na análise: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    document.getElementById('loading').style.display = 'none';
+  }
+}
+
+async function loadDemo() {
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('logText').value = '';
+  selectedFile = null;
+  dropZone.innerHTML = `<div class="icon">📂</div><strong>Arraste um arquivo aqui</strong><p>ou clique para selecionar</p><p style="font-size:.7rem;margin-top:4px;">Formatos: .log · .txt · .csv</p>`;
+
+  const res = await fetch('/demo');
+  const data = await res.json();
+  document.getElementById('loading').style.display = 'none';
+  renderResults(data);
+}
+
+function renderResults(data) {
+  const s = data.summary;
+
+  document.getElementById('genInfo').textContent =
+    `Análise gerada em: ${data.generated_at} · ${s.total_lines} linhas processadas`;
+
+  // STAT CARDS
+  const statGrid = document.getElementById('statGrid');
+  statGrid.innerHTML = [
+    { label: 'Total de Linhas', value: s.total_lines, cls: 'stat-neutral' },
+    { label: 'Eventos', value: s.total_events, cls: 'stat-neutral' },
+    { label: 'Críticos', value: s.critical, cls: 'stat-critical' },
+    { label: 'Alto Risco', value: s.high, cls: 'stat-high' },
+    { label: 'Alertas', value: s.warnings, cls: 'stat-warn' },
+    { label: 'IPs Únicos', value: s.unique_ips, cls: 'stat-ok' },
+    { label: 'Brute Force', value: s.brute_force_suspects.length, cls: s.brute_force_suspects.length ? 'stat-critical' : 'stat-ok' },
+  ].map(c => `
+    <div class="stat-card ${c.cls}">
+      <div class="stat-value">${c.value}</div>
+      <div class="stat-label">${c.label}</div>
+    </div>`).join('');
+
+  // ALERTS
+  const alertList = document.getElementById('alertList');
+  if (!s.alerts.length) {
+    alertList.innerHTML = '<div style="color:var(--green);font-family:var(--font-mono);font-size:.8rem;padding:12px;">✔ Nenhum alerta detectado.</div>';
+  } else {
+    alertList.innerHTML = s.alerts.map((a, i) => `
+      <div class="alert-item sev-${a.severity}" style="animation-delay:${i*0.05}s">
+        <span class="alert-badge">${a.severity}</span>
+        <div class="alert-body">
+          <div class="alert-msg">${a.message}</div>
+          <div class="alert-raw">${escHtml(a.raw)}</div>
+        </div>
+      </div>`).join('');
+  }
+
+  // IPs
+  const maxIp = s.top_ips.length ? s.top_ips[0][1] : 1;
+  document.getElementById('ipList').innerHTML = s.top_ips.length
+    ? s.top_ips.map(([ip, cnt]) => `
+      <div class="ip-row">
+        <span class="ip-addr">${ip}</span>
+        <span class="ip-count">${cnt}</span>
+      </div>
+      <div class="ip-bar" style="width:${Math.max(10, (cnt/maxIp)*100)}%"></div>
+    `).join('')
+    : '<div style="color:var(--muted);font-size:.8rem;">Nenhum IP encontrado.</div>';
+
+  // Status codes
+  document.getElementById('statusList').innerHTML = Object.entries(s.status_codes).length
+    ? Object.entries(s.status_codes).map(([code, cnt]) => {
+        let cls = 'sev-info';
+        if (code.startsWith('2')) cls = 's2xx';
+        else if (code.startsWith('3')) cls = 's3xx';
+        else if (code.startsWith('4')) cls = 's4xx';
+        else if (code.startsWith('5')) cls = 's5xx';
+        return `<div class="status-row">
+          <span class="status-code ${cls}">${code}</span>
+          <div class="ip-bar" style="width:${Math.max(10,(cnt/Math.max(...Object.values(s.status_codes)))*100)}%;flex:1;margin:0;height:4px;"></div>
+          <span class="status-count">${cnt}</span>
+        </div>`;
+      }).join('')
+    : '<div style="color:var(--muted);font-size:.8rem;">Nenhum status HTTP encontrado.</div>';
+
+  // EVENTS TABLE
+  const tbody = document.getElementById('eventsBody');
+  const sevMap = { critical: 'sev-critical', high: 'sev-high', warning: 'sev-warning', info: 'sev-info' };
+  const sevLabel = { critical: 'CRÍTICO', high: 'ALTO', warning: 'ATENÇÃO', info: 'INFO' };
+  tbody.innerHTML = data.events.map(e => `
+    <tr>
+      <td class="line-num">#${e.line}</td>
+      <td><span class="sev-badge ${sevMap[e.severity]||'sev-info'}">${sevLabel[e.severity]||e.severity}</span></td>
+      <td class="type-tag">${e.type}</td>
+      <td class="ip-tag">${e.ip||'—'}</td>
+      <td style="color:var(--muted);max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+        ${e.path ? escHtml(e.path) : (e.user ? 'user: '+e.user : (e.keyword||'—'))}
+      </td>
+    </tr>`).join('');
+
+  document.getElementById('results').style.display = 'block';
+  document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>
