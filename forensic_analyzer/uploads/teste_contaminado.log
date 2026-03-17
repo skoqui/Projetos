@@ -1,0 +1,86 @@
+# =============================================================
+#  LOG DE TESTE — Forensic Log Analyzer · UNIP
+#  Contém: Brute Force, SQLi, XSS, Path Traversal, Scanners
+# =============================================================
+
+# ── ACESSOS NORMAIS ──────────────────────────────────────────
+192.168.1.10 - - [15/Mar/2025:08:00:01 +0000] "GET /index.html HTTP/1.1" 200 4096
+192.168.1.10 - - [15/Mar/2025:08:00:05 +0000] "GET /about.html HTTP/1.1" 200 2048
+192.168.1.10 - - [15/Mar/2025:08:00:12 +0000] "POST /contact HTTP/1.1" 200 512
+192.168.1.15 - - [15/Mar/2025:08:01:00 +0000] "GET /produtos HTTP/1.1" 200 8192
+192.168.1.20 - - [15/Mar/2025:08:02:30 +0000] "GET /login HTTP/1.1" 200 1024
+192.168.1.20 - - [15/Mar/2025:08:02:45 +0000] "POST /login HTTP/1.1" 200 512
+
+# ── BRUTE FORCE SSH (IP: 10.0.0.77) ─────────────────────────
+Mar 15 08:10:01 srv01 sshd[4421]: Failed password for root from 10.0.0.77 port 52341 ssh2
+Mar 15 08:10:02 srv01 sshd[4422]: Failed password for root from 10.0.0.77 port 52342 ssh2
+Mar 15 08:10:03 srv01 sshd[4423]: Failed password for admin from 10.0.0.77 port 52343 ssh2
+Mar 15 08:10:04 srv01 sshd[4424]: Failed password for admin from 10.0.0.77 port 52344 ssh2
+Mar 15 08:10:05 srv01 sshd[4425]: Invalid user oracle from 10.0.0.77 port 52345
+Mar 15 08:10:06 srv01 sshd[4426]: Invalid user postgres from 10.0.0.77 port 52346
+Mar 15 08:10:07 srv01 sshd[4427]: Invalid user ubuntu from 10.0.0.77 port 52347
+Mar 15 08:10:08 srv01 sshd[4428]: Failed password for root from 10.0.0.77 port 52348 ssh2
+Mar 15 08:10:09 srv01 sshd[4429]: Failed password for root from 10.0.0.77 port 52349 ssh2
+Mar 15 08:10:10 srv01 sshd[4430]: Accepted password for deploy from 192.168.1.50 port 22 ssh2
+
+# ── BRUTE FORCE WEB LOGIN (IP: 185.220.101.45) ───────────────
+185.220.101.45 - - [15/Mar/2025:08:15:00 +0000] "POST /login HTTP/1.1" 401 256
+185.220.101.45 - - [15/Mar/2025:08:15:01 +0000] "POST /login HTTP/1.1" 401 256
+185.220.101.45 - - [15/Mar/2025:08:15:02 +0000] "POST /login HTTP/1.1" 401 256
+185.220.101.45 - - [15/Mar/2025:08:15:03 +0000] "POST /login HTTP/1.1" 401 256
+185.220.101.45 - - [15/Mar/2025:08:15:04 +0000] "POST /login HTTP/1.1" 401 256
+185.220.101.45 - - [15/Mar/2025:08:15:05 +0000] "POST /login HTTP/1.1" 401 256
+185.220.101.45 - - [15/Mar/2025:08:15:06 +0000] "POST /login HTTP/1.1" 200 2048
+
+# ── SQL INJECTION (IP: 45.33.32.156) ─────────────────────────
+45.33.32.156 - - [15/Mar/2025:08:20:00 +0000] "GET /produto?id=1 HTTP/1.1" 200 1024
+45.33.32.156 - - [15/Mar/2025:08:20:05 +0000] "GET /produto?id=1' HTTP/1.1" 500 128
+45.33.32.156 - - [15/Mar/2025:08:20:10 +0000] "GET /produto?id=1' OR '1'='1 HTTP/1.1" 200 4096
+45.33.32.156 - - [15/Mar/2025:08:20:15 +0000] "GET /busca?q=1' UNION SELECT username,password FROM users-- HTTP/1.1" 500 256
+45.33.32.156 - - [15/Mar/2025:08:20:20 +0000] "GET /busca?q=1' UNION SELECT null,table_name FROM information_schema.tables-- HTTP/1.1" 500 256
+45.33.32.156 - - [15/Mar/2025:08:20:25 +0000] "GET /admin?id=1; DROP TABLE usuarios-- HTTP/1.1" 403 128
+45.33.32.156 - - [15/Mar/2025:08:20:30 +0000] "GET /exec?cmd=xp_cmdshell('whoami') HTTP/1.1" 403 128
+
+# ── XSS — Cross-Site Scripting (IP: 203.0.113.99) ────────────
+203.0.113.99 - - [15/Mar/2025:08:30:00 +0000] "GET /comentario?texto=<script>alert(1)</script> HTTP/1.1" 200 512
+203.0.113.99 - - [15/Mar/2025:08:30:05 +0000] "GET /perfil?nome=<script>document.cookie</script> HTTP/1.1" 200 512
+203.0.113.99 - - [15/Mar/2025:08:30:10 +0000] "GET /busca?q=<img src=x onerror=alert('xss')> HTTP/1.1" 200 512
+203.0.113.99 - - [15/Mar/2025:08:30:15 +0000] "GET /page?ref=javascript:eval(atob('YWxlcnQoMSk=')) HTTP/1.1" 200 512
+
+# ── PATH TRAVERSAL (IP: 91.108.4.200) ────────────────────────
+91.108.4.200 - - [15/Mar/2025:08:40:00 +0000] "GET /../../../etc/passwd HTTP/1.1" 403 256
+91.108.4.200 - - [15/Mar/2025:08:40:05 +0000] "GET /download?file=../../../etc/shadow HTTP/1.1" 403 256
+91.108.4.200 - - [15/Mar/2025:08:40:10 +0000] "GET /static/%2e%2e%2f%2e%2e%2fetc%2fpasswd HTTP/1.1" 400 128
+91.108.4.200 - - [15/Mar/2025:08:40:15 +0000] "GET /img?src=..%2F..%2F..%2Fproc%2Fself%2Fenviron HTTP/1.1" 400 128
+91.108.4.200 - - [15/Mar/2025:08:40:20 +0000] "GET /arquivo?nome=../../../../var/log/auth.log HTTP/1.1" 403 256
+
+# ── SCANNER — Ferramentas de ataque detectadas ───────────────
+78.46.60.71 - - [15/Mar/2025:09:00:00 +0000] "GET / HTTP/1.1" 200 4096 "-" "sqlmap/1.7.8#stable (https://sqlmap.org)"
+78.46.60.71 - - [15/Mar/2025:09:00:01 +0000] "GET /login?user=test HTTP/1.1" 200 1024 "-" "sqlmap/1.7.8#stable"
+198.51.100.5 - - [15/Mar/2025:09:05:00 +0000] "GET / HTTP/1.1" 200 4096 "-" "Nikto/2.1.6"
+198.51.100.5 - - [15/Mar/2025:09:05:02 +0000] "GET /phpinfo.php HTTP/1.1" 404 128 "-" "Nikto/2.1.6"
+198.51.100.5 - - [15/Mar/2025:09:05:04 +0000] "GET /.git/config HTTP/1.1" 404 128 "-" "Nikto/2.1.6"
+198.51.100.5 - - [15/Mar/2025:09:05:06 +0000] "GET /wp-login.php HTTP/1.1" 404 128 "-" "Nikto/2.1.6"
+5.188.210.33 - - [15/Mar/2025:09:10:00 +0000] "GET /admin HTTP/1.1" 404 128 "-" "gobuster/3.6"
+5.188.210.33 - - [15/Mar/2025:09:10:01 +0000] "GET /backup HTTP/1.1" 404 128 "-" "gobuster/3.6"
+5.188.210.33 - - [15/Mar/2025:09:10:02 +0000] "GET /config HTTP/1.1" 404 128 "-" "gobuster/3.6"
+5.188.210.33 - - [15/Mar/2025:09:10:03 +0000] "GET /.env HTTP/1.1" 404 128 "-" "gobuster/3.6"
+
+# ── ERROS CRÍTICOS DO SISTEMA ─────────────────────────────────
+2025-03-15 09:20:00 CRITICAL Authentication service crashed — restarting
+2025-03-15 09:20:05 ERROR Failed to connect to database from 192.168.1.100
+2025-03-15 09:20:10 FATAL Disk quota exceeded on /var/log
+2025-03-15 09:20:15 WARNING Unauthorized access attempt blocked from 45.33.32.156
+2025-03-15 09:20:20 ERROR SSL certificate validation failed for 10.0.0.77
+2025-03-15 09:25:00 ALERT Possible intrusion detected — firewall rule triggered
+2025-03-15 09:25:10 CRITICAL Root login via SSH detected from 185.220.101.45
+
+# ── ACESSO SUSPEITO AO /admin ─────────────────────────────────
+45.33.32.156 - - [15/Mar/2025:10:00:00 +0000] "GET /admin HTTP/1.1" 403 256
+45.33.32.156 - - [15/Mar/2025:10:00:05 +0000] "GET /admin/config.php HTTP/1.1" 403 256
+45.33.32.156 - - [15/Mar/2025:10:00:10 +0000] "GET /admin/usuarios HTTP/1.1" 403 256
+185.220.101.45 - - [15/Mar/2025:10:05:00 +0000] "GET /wp-admin HTTP/1.1" 404 128
+185.220.101.45 - - [15/Mar/2025:10:05:05 +0000] "GET /.env HTTP/1.1" 404 128
+185.220.101.45 - - [15/Mar/2025:10:05:10 +0000] "GET /config.bak HTTP/1.1" 404 128
+
+# ── FIM DO LOG ────────────────────────────────────────────────
