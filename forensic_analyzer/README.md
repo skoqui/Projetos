@@ -5,6 +5,18 @@
 
 ---
 
+![alt text](</forensic_analyzer/imagens/1.png>)
+
+![alt text](</forensic_analyzer/imagens/2.png>)
+
+![alt text](</forensic_analyzer/imagens/3.png>)
+
+![alt text](</forensic_analyzer/imagens/4.png>)
+
+![alt text](</forensic_analyzer/imagens/5.png>)
+
+---
+
 ## 📌 Descrição
 
 Ferramenta de análise forense de logs desenvolvida em Python com interface web.
