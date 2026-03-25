@@ -1,0 +1,84 @@
+============================================================
+  FORENSIC LOG ANALYZER — RELATÓRIO FORENSE
+  Gerado em: 25/03/2026 20:34:58
+============================================================
+
+── RESUMO ──────────────────────────────────────────────
+  Total de linhas analisadas : 29
+  Total de eventos           : 26
+  Eventos CRÍTICOS           : 0
+  Eventos ALTO RISCO         : 6
+  Alertas                    : 16
+  IPs únicos detectados      : 10
+
+── ALERTAS DE SEGURANÇA ────────────────────────────────
+  [ALTO] Tentativa de XSS (linha 13)
+         IP: 203.0.113.99
+         >> 203.0.113.99 - - [15/Mar/2025:08:30:00 +0000] "GET /comentario?texto=<script>alert(1)</script> HTTP/
+  [ALTO] Tentativa de XSS (linha 14)
+         IP: 203.0.113.99
+         >> 203.0.113.99 - - [15/Mar/2025:08:30:05 +0000] "GET /perfil?nome=<script>document.cookie</script> HTT
+  [ALTO] Path Traversal detectado (linha 15)
+         IP: 91.108.4.200
+         >> 91.108.4.200 - - [15/Mar/2025:08:40:00 +0000] "GET /../../../etc/passwd HTTP/1.1" 403 256
+  [ALTO] Path Traversal detectado (linha 16)
+         IP: 91.108.4.200
+         >> 91.108.4.200 - - [15/Mar/2025:08:40:10 +0000] "GET /static/%2e%2e%2f%2e%2e%2fetc%2fpasswd HTTP/1.1" 
+  [ALTO] Scanner/ferramenta de ataque detectado (linha 25)
+         IP: 78.46.60.71
+         >> 78.46.60.71 - - [15/Mar/2025:09:00:00 +0000] "GET / HTTP/1.1" 200 4096 "-" "sqlmap/1.7.8"
+  [ALTO] Scanner/ferramenta de ataque detectado (linha 26)
+         IP: 198.51.100.5
+         >> 198.51.100.5 - - [15/Mar/2025:09:05:00 +0000] "GET / HTTP/1.1" 200 4096 "-" "Nikto/2.1.6"
+  [CRÍTICO] Brute Force: 7 tentativas falhadas do IP 10.0.0.77
+         IP: 10.0.0.77
+
+── TOP IPs ─────────────────────────────────────────────
+  185.220.101.45       8 requisições
+  10.0.0.77            7 requisições ⚠ BRUTE FORCE
+  45.33.32.156         4 requisições
+  203.0.113.99         2 requisições
+  91.108.4.200         2 requisições
+  192.168.1.10         1 requisições
+  192.168.1.15         1 requisições
+  192.168.1.50         1 requisições
+  78.46.60.71          1 requisições
+  198.51.100.5         1 requisições
+
+── CÓDIGOS HTTP ────────────────────────────────────────
+  HTTP 200 : 7x
+  HTTP 401 : 6x
+  HTTP 403 : 1x
+  HTTP 400 : 1x
+
+── EVENTOS DETECTADOS ──────────────────────────────────
+  Linha 1     [INFO    ] Requisição Web            IP: 192.168.1.10       /index.html
+  Linha 2     [INFO    ] Requisição Web            IP: 192.168.1.15       /produtos
+  Linha 3     [ATENÇÃO ] Requisição Web            IP: 185.220.101.45     /login
+  Linha 4     [ATENÇÃO ] Requisição Web            IP: 185.220.101.45     /login
+  Linha 5     [ATENÇÃO ] Requisição Web            IP: 185.220.101.45     /login
+  Linha 6     [ATENÇÃO ] Requisição Web            IP: 185.220.101.45     /login
+  Linha 7     [ATENÇÃO ] Requisição Web            IP: 185.220.101.45     /login
+  Linha 8     [ATENÇÃO ] Requisição Web            IP: 185.220.101.45     /login
+  Linha 9     [INFO    ] Requisição Web            IP: 185.220.101.45     /login
+  Linha 13    [ALTO    ] XSS                       IP: 203.0.113.99       /comentario?texto=<script>alert(1)</script>
+  Linha 14    [ALTO    ] XSS                       IP: 203.0.113.99       /perfil?nome=<script>document.cookie</script>
+  Linha 15    [ALTO    ] Path Traversal            IP: 91.108.4.200       /../../../etc/passwd
+  Linha 16    [ALTO    ] Path Traversal            IP: 91.108.4.200       /static/%2e%2e%2f%2e%2e%2fetc%2fpasswd
+  Linha 17    [ATENÇÃO ] SSH Falha Login           IP: 10.0.0.77          user: root
+  Linha 18    [ATENÇÃO ] SSH Falha Login           IP: 10.0.0.77          user: root
+  Linha 19    [ATENÇÃO ] SSH Falha Login           IP: 10.0.0.77          user: admin
+  Linha 20    [ATENÇÃO ] SSH Falha Login           IP: 10.0.0.77          user: admin
+  Linha 21    [ATENÇÃO ] SSH Usuário Inválido      IP: 10.0.0.77          user: oracle
+  Linha 22    [ATENÇÃO ] SSH Usuário Inválido      IP: 10.0.0.77          user: postgres
+  Linha 23    [ATENÇÃO ] SSH Usuário Inválido      IP: 10.0.0.77          user: ubuntu
+  Linha 24    [INFO    ] SSH Login OK              IP: 192.168.1.50       user: deploy
+  Linha 25    [ALTO    ] Scanner                   IP: 78.46.60.71        /
+  Linha 26    [ALTO    ] Scanner                   IP: 198.51.100.5       /
+  Linha 27    [ATENÇÃO ] Palavra-chave: CRITICAL   IP: N/A                2025-03-15 09:20:00 CRITICAL Authentication service crashed
+  Linha 28    [ATENÇÃO ] Palavra-chave: UNAUTHORIZED IP: 45.33.32.156       2025-03-15 09:20:15 WARNING Unauthorized access attempt from
+  Linha 29    [ATENÇÃO ] Palavra-chave: CRITICAL   IP: 185.220.101.45     2025-03-15 09:25:10 CRITICAL Root login via SSH detected fro
+
+============================================================
+  FIN DO RELATÓRIO
+============================================================
