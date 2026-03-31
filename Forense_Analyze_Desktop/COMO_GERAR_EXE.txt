@@ -1,0 +1,61 @@
+===============================================================
+  FORENSIC LOG ANALYZER — Desktop Edition
+  Como gerar o executável .exe (Windows)
+===============================================================
+
+PASSO 1 — Instalar dependências
+─────────────────────────────────
+Abra o cmd ou terminal na pasta do projeto e rode:
+
+    pip install pyinstaller
+
+(O Tkinter já vem embutido no Python para Windows, não precisa instalar.)
+
+
+PASSO 2 — Gerar o .exe
+─────────────────────────────────
+Na mesma pasta onde está o app.py, rode:
+
+    pyinstaller --onefile --windowed --name "ForensicLogAnalyzer" app.py
+
+  --onefile    → gera um único arquivo .exe portátil
+  --windowed   → não abre janela de cmd ao lado (só a interface gráfica)
+  --name       → nome do executável gerado
+
+
+PASSO 3 — Encontrar o .exe
+─────────────────────────────────
+Após o comando terminar, o executável estará em:
+
+    dist/ForensicLogAnalyzer.exe
+
+Basta copiar esse arquivo para qualquer computador Windows
+e rodar com dois cliques. Não precisa instalar Python!
+
+
+PASSO 4 — Adicionar ícone (opcional)
+─────────────────────────────────
+Se quiser um ícone personalizado (.ico):
+
+    pyinstaller --onefile --windowed --icon=icone.ico --name "ForensicLogAnalyzer" app.py
+
+
+ESTRUTURA DO PROJETO
+─────────────────────────────────
+forensic_desktop/
+├── app.py                    ← código principal
+├── COMO_GERAR_EXE.txt        ← este arquivo
+└── dist/
+    └── ForensicLogAnalyzer.exe  ← gerado após o build
+
+
+REQUISITOS
+─────────────────────────────────
+- Python 3.8 ou superior
+- pip install pyinstaller
+- Windows 10/11 (para gerar e rodar o .exe)
+- O .exe gerado funciona em qualquer Windows sem instalar Python
+
+===============================================================
+  UNIP · Segurança da Informação · Horas Complementares
+===============================================================
